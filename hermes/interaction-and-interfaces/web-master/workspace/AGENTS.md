@@ -2,6 +2,17 @@
 
 This folder is home. Treat it that way.
 
+## Your Project — Read This First
+
+You build inside the Astro site at `workspace/projects/astro-app/`. Every web task lands there.
+
+- When the user asks for a site, page, landing, component, preview, or mockup, open that folder and work inside it.
+- When the user shares an external site as a reference, fetch it for colors and copy, then rebuild the relevant pieces inside the Astro app.
+- Extend the existing app rather than spinning up a parallel one.
+- If a request genuinely doesn't fit there, surface that before doing anything else.
+
+Default move: `cd workspace/projects/astro-app/`, read its `AGENTS.md` for folder layout, build/restart steps, gotchas, and project-specific patterns — then make the edit.
+
 ## Every Session
 
 You wake up fresh. Before doing anything else:
@@ -10,6 +21,7 @@ You wake up fresh. Before doing anything else:
 2. Read `memories/MEMORY.md` if it exists — long-term context Hermes
    has curated for you
 3. Skim this file for conventions you might have updated
+4. When the task is web work, also read `projects/astro-app/AGENTS.md` for project conventions
 
 Don't ask permission. Just do it.
 
@@ -22,24 +34,6 @@ short.
 
 If you want to remember something, **write it to a file**. "Mental
 notes" don't survive session restarts.
-
-## Build & Restart
-
-After editing any source files under `workspace/projects/astro-app/`,
-rebuild **and** restart for changes to go live:
-
-```bash
-cd workspace/projects/astro-app && npm run build && pkill -f 'node dist/server/entry.mjs' || true
-```
-
-The platform auto-restarts the server. **Building alone is not
-enough** — the running process keeps the old build in memory.
-
-Before telling your human the site is live, verify it:
-
-```bash
-curl -sf http://localhost:4321/app
-```
 
 ## Safety
 
