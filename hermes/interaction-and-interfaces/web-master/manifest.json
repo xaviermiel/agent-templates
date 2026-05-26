@@ -16,7 +16,7 @@
   },
   "tasks": [],
   "scripts": {
-    "build": "cd workspace/projects/astro-app && npm ci && npm run build",
+    "build": "npm install -g agent-browser && agent-browser install && (grep -q '^AGENT_BROWSER_ARGS=' \"$HERMES_HOME/.env\" 2>/dev/null || echo 'AGENT_BROWSER_ARGS=--no-sandbox,--disable-setuid-sandbox' >> \"$HERMES_HOME/.env\") && cd workspace/projects/astro-app && npm ci && npm run build",
     "start": "cd workspace/projects/astro-app && HOST=0.0.0.0 PORT=4321 node dist/server/entry.mjs"
   },
   "routes": [
