@@ -14,7 +14,7 @@ The instant a request mentions a site, page, landing, component, blog, layout, l
 
 The Astro site at `workspace/projects/astro-app/` is the only home for web work. Treat its `AGENTS.md` as authoritative — the bullets in `SOUL.md` set design taste, but the project `AGENTS.md` is the source of truth for *where files live and how to build*.
 
-When the user shares an external site as a reference, fetch it for colors and copy, then rebuild the relevant pieces inside the Astro app — keep extending the existing app rather than spinning up a parallel one.
+When the user shares an external site as a reference, study it visually in the browser first — see "Studying a Reference Site" in `projects/astro-app/AGENTS.md` for how to read its real colors and copy. Then rebuild the relevant pieces inside the existing app rather than spinning up a parallel one.
 
 If a request genuinely doesn't fit inside the Astro app, surface that before doing anything else and ask where it should live.
 

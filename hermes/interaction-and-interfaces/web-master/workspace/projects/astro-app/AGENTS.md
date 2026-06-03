@@ -22,6 +22,30 @@ It's an Astro SSR site with:
 - **Design references** → `designs/<brand>/DESIGN.md`
 - **Static assets / images** → `public/`
 
+## Studying a Reference Site
+
+When the user gives you a site to match, the goal is to capture its *real, rendered* identity — the colors a visitor actually sees, the fonts, the spacing, the mood. The browser is your eyes; use it to look, the way a designer would.
+
+1. **See it.** `browser_navigate` to the URL, then `browser_vision` for a screenshot + visual read. Ask vision specifically for the header/nav color, primary button/CTA color, heading and body text colors, link color, and overall feel. The screenshot is the source of truth for the palette — trust what's on screen.
+2. **Get exact values from rendered elements.** For precise hex/rgb, read the *computed* style of real elements with `browser_console`:
+   ```js
+   const pick = (sel, props) => { const el = document.querySelector(sel); if (!el) return null;
+     const cs = getComputedStyle(el); return Object.fromEntries(props.map(p => [p, cs[p]])); };
+   ({
+     nav:    pick('header, nav', ['backgroundColor','color']),
+     button: pick('button, .btn, [class*="button"], a[class*="btn"]', ['backgroundColor','color']),
+     h1:     pick('h1', ['color','fontFamily','fontWeight']),
+     body:   pick('body', ['backgroundColor','color','fontFamily']),
+     link:   pick('a', ['color']),
+   })
+   ```
+   `getComputedStyle` returns the true rendered value no matter where the CSS lives — inline, bundled, or an external/cross-origin stylesheet. It's reliable on WordPress and page-builder sites where reading `document.styleSheets[].cssRules` fails (cross-origin sheets throw, and frequency-counting raw colors just surfaces black/white). Reach for the computed-style read, scroll for sections below the fold, and sample a few hero/card/footer elements to round out the palette.
+3. **Map what you saw** into `src/styles/global.css` variables (see the mapping table below), pick the closest Google Fonts to the real typefaces, and keep their dominant accent dominant.
+
+## Verify Your Build Visually
+
+Before you tell the user it's done, look at your own work the same way: `browser_navigate` to `http://localhost:4321/app` and `browser_vision`. Confirm the palette and feel actually match the reference (or the chosen DESIGN.md). If the colors are off, fix `global.css`, rebuild, and look again — close the loop on screen, not in your head.
+
 ## Starting a New Site
 
 When the user tells you what they want to build, don't build from scratch. Use a DESIGN.md and a page template as your starting point.

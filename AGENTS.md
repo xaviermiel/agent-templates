@@ -31,6 +31,8 @@ When editing persona or runtime behavior, edit files inside the relevant templat
 
 The `pinata` CLI streamlines the dev loop — `templates validate <git-url>` checks a branch against the manifest schema before submitting, then `templates submit / update`, and `agents create -t <id>` + `chat` to test. See `pinata agents --help`.
 
+**Provider keys are secrets.** Templates declare which inference provider they use in their config (`model.provider`), but the API key itself is just a secret env var attached to the agent. To deploy with Anthropic, attach the `ANTHROPIC_API_KEY` secret. Do it at creation in one shot: `pinata agents create -t <template-id> -n <name> --secret <secret-id>` (`--secret` is repeatable). Attaching after creation works too but requires a restart.
+
 After `agents create`, the agent reports `status: running` immediately, but `scripts.build` runs asynchronously in the background. Heavy installs (Chrome, large `npm ci`, etc.) can take 1–3 minutes. Don't test capabilities that depend on the build until it's actually finished — poll `agents get <id>` for `snapshotCid` flipping off `"pending"`, or `agents exec <id> "which <tool>"` to confirm.
 
 ### Debugging build/start failures
