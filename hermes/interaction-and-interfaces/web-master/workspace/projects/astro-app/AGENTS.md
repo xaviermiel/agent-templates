@@ -39,21 +39,25 @@ echo "https://$AGENT_ID.agents.pinata.cloud/app"
 
 When the user gives you a site to match, the goal is to capture its *real, rendered* identity — the colors a visitor actually sees, the fonts, the spacing, the mood. The browser is your eyes; use it to look, the way a designer would.
 
-1. **See it.** `browser_navigate` to the URL, then `browser_vision` for a screenshot + visual read. Ask vision specifically for the header/nav color, primary button/CTA color, heading and body text colors, link color, and overall feel. The screenshot is the source of truth for the palette — trust what's on screen.
-2. **Get exact values from rendered elements.** For precise hex/rgb, read the *computed* style of real elements with `browser_console`:
+**The page isn't ready the instant it loads.** WordPress and page-builder themes keep applying styles with JavaScript *after* the DOM is built — backgrounds, slider colors, the logo bar all land a beat later. If you read `getComputedStyle` too early, colored elements report `transparent` and you'll miss the most important brand colors. So let what's actually *painted on screen* lead, and treat the DOM read as confirmation, never as the first move.
+
+1. **Let it paint, then see it.** `browser_navigate` to the URL, then take a `browser_vision` screenshot. Producing the screenshot waits for the page to actually render, so it does double duty: it's your ground-truth palette **and** it lets the theme's JS finish before you touch the DOM. Ask vision specifically for the header/nav bar color, the logo and its background, the primary button/CTA color, heading and body text colors, link color, and the overall feel. Whatever you see on screen is the truth.
+2. **Walk the whole page.** `browser_scroll` down through every section, screenshotting as you go (hero → nav → cards → dividers → footer). Below-the-fold and lazy-loaded sections only render their real styles once they're in view — scrolling is what makes them paint. Note every distinct color you actually see, section by section.
+3. **Confirm exact hex on the elements you saw.** Now — and only now — read computed styles to pin down precise values, targeting the *specific painted elements* vision flagged, not generic wrappers:
    ```js
    const pick = (sel, props) => { const el = document.querySelector(sel); if (!el) return null;
      const cs = getComputedStyle(el); return Object.fromEntries(props.map(p => [p, cs[p]])); };
    ({
-     nav:    pick('header, nav', ['backgroundColor','color']),
+     navBar: pick('.header-bg-color, header .container, header > div', ['backgroundColor','color']),
+     logoBg: pick('#logo, .logo, [class*="logo"]', ['backgroundColor']),
      button: pick('button, .btn, [class*="button"], a[class*="btn"]', ['backgroundColor','color']),
      h1:     pick('h1', ['color','fontFamily','fontWeight']),
      body:   pick('body', ['backgroundColor','color','fontFamily']),
      link:   pick('a', ['color']),
    })
    ```
-   `getComputedStyle` returns the true rendered value no matter where the CSS lives — inline, bundled, or an external/cross-origin stylesheet. It's reliable on WordPress and page-builder sites where reading `document.styleSheets[].cssRules` fails (cross-origin sheets throw, and frequency-counting raw colors just surfaces black/white). Reach for the computed-style read, scroll for sections below the fold, and sample a few hero/card/footer elements to round out the palette.
-3. **Map what you saw** into `src/styles/global.css` variables (see the mapping table below), pick the closest Google Fonts to the real typefaces, and keep their dominant accent dominant.
+   `getComputedStyle` returns the true rendered value no matter where the CSS lives — inline, bundled, or external/cross-origin — so it's reliable where reading `document.styleSheets[].cssRules` fails. **The trap:** a generic `header`/`nav` is often a transparent wrapper; the real color sits on an inner bar (e.g. WordPress's `.header-bg-color`). If a value comes back `transparent` or `rgba(0,0,0,0)` but your screenshot clearly shows a color there, you queried the wrong element or read too early — re-screenshot, then query the visible child. Never let a `transparent` reading override what you can plainly see. And don't try to shortcut this with a `querySelectorAll('*')` color-frequency sweep — it drowns the brand colors in black/white and misses anything below the fold.
+4. **Map what you saw** into `src/styles/global.css` variables (see the mapping table below), pick the closest Google Fonts to the real typefaces, and keep their dominant accent dominant.
 
 ## Verify Your Build Visually
 
