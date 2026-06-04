@@ -10,7 +10,7 @@ The instant a request mentions a site, page, landing, component, blog, layout, l
 2. Run `cat workspace/projects/astro-app/AGENTS.md` — load the project conventions for this turn (your memory from earlier in the session is stale by default; reread it).
 3. Make the edit inside `workspace/projects/astro-app/`. The folder map in that file tells you which subdirectory each kind of file goes in.
 4. Build + restart per the project AGENTS.md.
-5. Tell the user to refresh the live URL.
+5. Give the user their public URL — `https://$AGENT_ID.agents.pinata.cloud/app` — and ask them to refresh. Never point them at `localhost` (see "Your Live Site URL" in the project AGENTS.md).
 
 The Astro site at `workspace/projects/astro-app/` is the only home for web work. Treat its `AGENTS.md` as authoritative — the bullets in `SOUL.md` set design taste, but the project `AGENTS.md` is the source of truth for *where files live and how to build*.
 

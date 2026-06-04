@@ -8,7 +8,20 @@ It's an Astro SSR site with:
 - **SQLite database** via `better-sqlite3` for the waitlist (stored in `data/database.db`)
 - **Content collections** for the blog (markdown and MDX files in `src/content/blog/`)
 - **UI component library** in `src/components/ui/` — Text, Button, Card, Box, Stack, Link
-- Port 4321 is forwarded so your human can see the site live
+- Port 4321 is where the site runs inside the container — see "Your Live Site URL" for the address you share with the user
+
+## Your Live Site URL
+
+There are two addresses, and they are not interchangeable:
+
+- **`http://localhost:4321/app`** — internal only. Reachable from inside the container, so it's what *you* use for `curl` health checks and `browser_navigate` screenshots. The user cannot open it.
+- **`https://$AGENT_ID.agents.pinata.cloud/app`** — the public URL. This is the only address the user can visit. `$AGENT_ID` is an environment variable in your shell (e.g. `xhdjmbjj`), and `/app` is this project's route.
+
+When you point the user at their site, **always give them the public URL**, never `localhost`. Build it from the env var:
+
+```bash
+echo "https://$AGENT_ID.agents.pinata.cloud/app"
+```
 
 ## Where Things Go
 
@@ -45,6 +58,37 @@ When the user gives you a site to match, the goal is to capture its *real, rende
 ## Verify Your Build Visually
 
 Before you tell the user it's done, look at your own work the same way: `browser_navigate` to `http://localhost:4321/app` and `browser_vision`. Confirm the palette and feel actually match the reference (or the chosen DESIGN.md). If the colors are off, fix `global.css`, rebuild, and look again — close the loop on screen, not in your head.
+
+## Navigation Feedback (Perceived Speed)
+
+This is a server-rendered site, so clicking a link triggers a network round-trip to fetch the next page. Without feedback, the page just sits there for a beat after the click — it reads as "frozen" even though it's working. Every site you build should acknowledge a click instantly. Two levers, use both:
+
+1. **Prefetch on intent.** Keep `data-astro-prefetch="hover"` on links (already the convention in the templates). Astro fetches the destination while the user's pointer is still on the link, so the actual click often resolves instantly.
+2. **Show a global loading bar.** The `ClientRouter` (already in `BaseHead.astro`) emits lifecycle events on every navigation — wire a thin top progress bar to them in `Layout.astro` so there's immediate visual motion on click, even on a cold navigation or mobile tap:
+
+   ```astro
+   <div id="nav-progress"></div>
+   <style>
+     #nav-progress {
+       position: fixed; top: 0; left: 0; height: 3px; width: 0;
+       background: var(--accent); z-index: 9999;
+       opacity: 0; transition: width 0.2s ease, opacity 0.2s ease;
+     }
+     #nav-progress.loading { width: 90%; opacity: 1; transition: width 10s cubic-bezier(0.1,0.7,0.1,1); }
+     #nav-progress.done    { width: 100%; opacity: 0; transition: width 0.1s ease, opacity 0.3s ease 0.1s; }
+   </style>
+   <script>
+     const bar = () => document.getElementById('nav-progress');
+     document.addEventListener('astro:before-preparation', () => bar()?.classList.add('loading'));
+     document.addEventListener('astro:page-load', () => {
+       const b = bar(); if (!b) return;
+       b.classList.remove('loading'); b.classList.add('done');
+       setTimeout(() => b.classList.remove('done'), 400);
+     });
+   </script>
+   ```
+
+   The bar climbs to ~90% immediately on click, then snaps to 100% and fades when the page loads. Tune the color/height to the brand. The same lifecycle events (`astro:before-preparation` → `astro:page-load`) also let you fade page content in/out or disable a clicked button if a project needs richer feedback.
 
 ## Starting a New Site
 
@@ -131,8 +175,8 @@ When asked to build or change something:
    ```bash
    HOST=0.0.0.0 PORT=4321 node dist/server/entry.mjs &
    ```
-4. Verify it's live: `curl -sf http://localhost:4321/app`
-5. Tell the user to refresh their browser
+4. Verify it's live (internal check): `curl -sf http://localhost:4321/app`
+5. Point the user at their **public** URL and ask them to refresh — `https://$AGENT_ID.agents.pinata.cloud/app` (see "Your Live Site URL"). Never send them to `localhost`.
 
 **Important:** Building alone is NOT enough. The running server serves the old build from memory. You must restart the server process after every build for changes to be visible.
 
