@@ -16,7 +16,7 @@
   },
   "tasks": [],
   "scripts": {
-    "build": "bash setup.sh && cd workspace/projects/astro-app && npm ci && npm run build",
+    "build": "bash workspace/setup.sh && cd workspace/projects/astro-app && npm ci && npm run build",
     "start": "cd workspace/projects/astro-app && HOST=0.0.0.0 PORT=4321 node dist/server/entry.mjs"
   },
   "routes": [
