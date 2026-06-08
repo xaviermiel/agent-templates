@@ -24,11 +24,12 @@ grep -q '^AGENT_BROWSER_ARGS=' "$HERMES_HOME/.env" 2>/dev/null \
 
 # --- browser_vision fix (engine workaround) -----------------------------------
 # The Hermes engine resolves the `agent-browser` CLI from $HERMES_HOME/node/bin
-# first, and passes a `--full` flag to its `screenshot` command. On heavy JS pages
-# `--full` makes Chrome's full-page capture hang, so browser_vision times out at 30s.
-# We can't edit the engine (it's a separate Docker build), so we drop a thin shim on
-# that lookup path: it forwards every call to the real agent-browser and strips
-# `--full`. Remove this once the engine stops sending `--full`.
+# first, and may pass a `--full` flag to its `screenshot` command. On heavy JS
+# pages `--full` can make Chrome's full-page capture hang, so browser_vision
+# times out at 30s. We can't edit the engine (it's a separate Docker build), so
+# we drop a thin shim on that lookup path: it forwards every call to the real
+# agent-browser and strips `--full`. Remove this once the engine stops sending
+# `--full`.
 #
 # Unquoted heredoc: $HOME is baked to the real install path now; the runtime vars
 # (\$@, \$a, \${args[@]}) are escaped so they stay literal in the generated script.

@@ -74,9 +74,9 @@ and rebuilds — the entire site transforms to match the new brand.
 ```
 web-master/
 ├── manifest.json     # Engine, template metadata, scripts, routes.
+├── SOUL.md           # Persona, design standards, user-facing behavior.
 ├── README.md         # This file. For humans cloning the template.
 └── workspace/        # Agent cwd. Everything in here is visible to the agent.
-    ├── SOUL.md       # Persona, design standards, build workflow.
     ├── AGENTS.md     # Runtime conventions, safety, build/restart rules.
     ├── images.json   # Stock image library (39 IPFS-hosted images).
     └── projects/
