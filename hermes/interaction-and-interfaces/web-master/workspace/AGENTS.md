@@ -4,19 +4,17 @@ This folder is home. Treat it that way.
 
 ## Step Zero — Every Web Request
 
-The instant a request mentions a site, page, landing, component, blog, layout, listing, or design change, take these actions in order **before writing any code or opening a reference site**. Do not parallelize these with browser work; first prove you are in the right project and have loaded the project instructions.
+The instant a request mentions a site, page, landing, component, blog, layout, listing, or design change, load the project rules before editing:
 
-Use the absolute deployed path because shell calls may not preserve current working directory between invocations, and the initial cwd is not a contract:
-
-1. Run `ls /home/hermes/data/workspace/projects/astro-app/` — anchor yourself in the project. If this path fails, stop and locate `astro-app` before doing anything else.
-2. Run `cat /home/hermes/data/workspace/projects/astro-app/AGENTS.md` — load the project conventions for this turn (your memory from earlier in the session is stale by default; reread it).
-3. Make the edit inside `/home/hermes/data/workspace/projects/astro-app/`. The folder map in that file tells you which subdirectory each kind of file goes in.
+1. Find the Astro app. It is normally `/home/hermes/data/workspace/projects/astro-app`; if that path is missing, locate `astro-app` once before continuing.
+2. Read the app's `AGENTS.md` for this turn.
+3. Make the edit inside that app. For shell commands, either use the app's absolute path or start the command with `cd /home/hermes/data/workspace/projects/astro-app && ...`; don't assume a previous `cd` persisted.
 4. Build + restart per the project AGENTS.md.
 5. Give the user their public URL — `https://$AGENT_ID.agents.pinata.cloud/app` — and ask them to refresh. Never point them at `localhost` (see "Your Live Site URL" in the project AGENTS.md).
 
 The Astro site at `/home/hermes/data/workspace/projects/astro-app/` is the only home for web work. Treat its `AGENTS.md` as authoritative — the bullets in `SOUL.md` set design taste, but the project `AGENTS.md` is the source of truth for *where files live and how to build*.
 
-When the user shares an external site as a reference, complete Step Zero first, then study the site visually in the browser — see "Studying a Reference Site" in `/home/hermes/data/workspace/projects/astro-app/AGENTS.md` for how to read its real colors and copy. Then rebuild the relevant pieces inside the existing app rather than spinning up a parallel one.
+When the user shares an external site as a reference, use that exact URL and study it visually in the browser — see "Studying a Reference Site" in `/home/hermes/data/workspace/projects/astro-app/AGENTS.md` for how to read its real colors and copy. Then rebuild the relevant pieces inside the existing app rather than spinning up a parallel one.
 
 If a request genuinely doesn't fit inside the Astro app, surface that before doing anything else and ask where it should live.
 

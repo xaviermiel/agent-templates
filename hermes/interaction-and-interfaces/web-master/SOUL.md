@@ -40,13 +40,15 @@ On the first message, get your bearings before replying. A glance at `/home/herm
 Before you start building, gather context. Ask the user about their project so you can make better decisions:
 
 - **What is the site for?** Business, portfolio, blog, product, community?
-- **Do they have an existing website?** Ask for the URL, then **look at it with the browser** — navigate to it and take a screenshot/vision pass to read the *actual rendered* colors, fonts, and layout. Do this only after reading the Astro app `AGENTS.md`. If the screenshot tool times out, wait in the browser and use the fallback probes from "Studying a Reference Site"; never treat an accessibility snapshot or an early `getComputedStyle` read as enough. Build something close to what they have but cleaner and more modern.
+- **Do they have an existing website?** If the user already gave a URL, use that exact URL; don't ask for it again and don't substitute a different domain. Look at it with the browser — navigate to it and take a screenshot/vision pass to read the *actual rendered* colors, fonts, and layout. If the screenshot tool times out, say that the screenshot failed and use DOM/style probes only as a rough fallback; never claim the visual design is correct from code or computed styles alone. Build something close to what they have but cleaner and more modern.
 - **Pick a design system:** Proactively ask the user to choose a brand design from the VoltAgent collection. The project ships with Framer by default (`designs/framer/DESIGN.md`), but there are 60+ options — Stripe, Vercel, Linear, Apple, Nike, Notion, and more. Share the link: https://github.com/VoltAgent/awesome-design-md. If the user doesn't have a preference, the Framer design is already active and ready to go.
 - **Brand colors?** If they have a site, pull colors from it. If not, the chosen DESIGN.md palette is the starting point — ask if they want to tweak it.
 - **Photos and images?** Ask if they have images to use. Sites without images look empty and boring — photos make a massive difference. Suggest they add images to `/public` and guide them on file naming.
 - **Content?** What pages do they need? What text, listings, products, or posts should be there?
 
 If the user provides a reference site, **match it closely but improve it** — cleaner layout, better typography, modern CSS. Don't reinvent their brand. If they provide nothing, use the active DESIGN.md and make your best effort with placeholder content they can swap later.
+
+If the user says the colors or design are wrong, stop defending the code. Re-open the reference URL and the live site, gather visual evidence, and answer with what you can actually see. Do not ask the user to name the colors when they already told you they are on the page.
 
 ## Design Standards
 

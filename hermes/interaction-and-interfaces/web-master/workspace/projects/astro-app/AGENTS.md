@@ -2,15 +2,7 @@
 
 This is the web project. All web work happens inside this folder.
 
-Project directory: `/home/hermes/data/workspace/projects/astro-app`.
-
-Do not assume a previous `cd` persists between terminal calls. For every shell command that touches project files, either use absolute paths or make the command self-contained by starting with:
-
-```bash
-cd /home/hermes/data/workspace/projects/astro-app && ...
-```
-
-Relative paths in this file are relative to that project directory.
+Project directory: `/home/hermes/data/workspace/projects/astro-app`. Relative paths in this file are from there; if a shell command starts elsewhere, prefix it with `cd /home/hermes/data/workspace/projects/astro-app &&`.
 
 It's an Astro SSR site with:
 
@@ -51,68 +43,10 @@ When the user gives you a site to match, the goal is to capture its *real, rende
 
 **The page isn't ready the instant it loads.** WordPress and page-builder themes keep applying styles with JavaScript *after* the DOM is built — backgrounds, slider colors, the logo bar all land a beat later. If you read `getComputedStyle` too early, colored elements report `transparent` and you'll miss the most important brand colors. So let what's actually *painted on screen* lead, and treat the DOM read as confirmation, never as the first move.
 
-1. **Let it paint, then see it.** `browser_navigate` to the URL, then take a `browser_vision` screenshot. Producing the screenshot waits for the page to actually render, so it does double duty: it's your ground-truth palette **and** it lets the theme's JS finish before you touch the DOM. Ask vision specifically for the header/nav bar color, the logo and its background, the primary button/CTA color, heading and body text colors, link color, and the overall feel. Whatever you see on screen is the truth.
-2. **If screenshot or scroll times out, wait and probe painted elements before moving on.** A `browser_snapshot` is only an accessibility tree; it does not prove the visual style loaded. Use `browser_console` to wait for JS, fonts, images, and two animation frames, then inspect elements that are currently visible in the viewport. This fallback is mandatory before you read colors or write code:
-   ```js
-   await new Promise(r => setTimeout(r, 5000));
-   await document.fonts?.ready;
-   await Promise.all([...document.images].filter(img => !img.complete).map(img => new Promise(r => {
-     img.addEventListener('load', r, { once: true });
-     img.addEventListener('error', r, { once: true });
-   })));
-   await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-
-   const bgOf = (el) => {
-     for (let n = el; n && n !== document.documentElement; n = n.parentElement) {
-       const cs = getComputedStyle(n);
-       if (cs.backgroundColor && cs.backgroundColor !== 'rgba(0, 0, 0, 0)' && cs.backgroundColor !== 'transparent') {
-         return { tag: n.tagName, id: n.id, cls: n.className, backgroundColor: cs.backgroundColor };
-       }
-     }
-     return null;
-   };
-
-   const sample = (name, x, y) => ({
-     name,
-     stack: document.elementsFromPoint(x, y).slice(0, 8).map(el => {
-       const cs = getComputedStyle(el);
-       const rect = el.getBoundingClientRect();
-       return {
-         tag: el.tagName,
-         id: el.id,
-         cls: String(el.className).slice(0, 120),
-         text: el.textContent?.trim().slice(0, 80),
-         rect: { x: Math.round(rect.x), y: Math.round(rect.y), w: Math.round(rect.width), h: Math.round(rect.height) },
-         backgroundColor: cs.backgroundColor,
-         inheritedBackground: bgOf(el),
-         color: cs.color,
-         fontFamily: cs.fontFamily,
-         fontWeight: cs.fontWeight
-       };
-     })
-   });
-
-   ({
-     url: location.href,
-     readyState: document.readyState,
-     scrollY,
-     samples: [
-       sample('top-left header', 40, 40),
-       sample('top-center nav', innerWidth / 2, 70),
-       sample('hero center', innerWidth / 2, Math.min(innerHeight * 0.45, 420)),
-       sample('primary cta/search', innerWidth / 2, Math.min(innerHeight * 0.72, 650))
-     ]
-   })
-   ```
-   If the important style appears only after scrolling, scroll with JS and wait again:
-   ```js
-   window.scrollTo({ top: Math.round(innerHeight * 0.9), behavior: 'instant' });
-   await new Promise(r => setTimeout(r, 2000));
-   await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-   ```
-   Repeat for each section you need. If a visible element reports `transparent`, use `inheritedBackground` from its painted ancestor. Never conclude "the nav is transparent" from a wrapper when a visible child or ancestor is colored.
-3. **Walk the whole page.** `browser_scroll` down through every section, screenshotting as you go (hero → nav → cards → dividers → footer). Below-the-fold and lazy-loaded sections only render their real styles once they're in view — scrolling is what makes them paint. If `browser_scroll` times out, use `window.scrollTo(...)` in `browser_console`, wait two seconds, then run the painted-element probe above for that viewport. Note every distinct color you actually see, section by section.
-4. **Confirm exact hex on the elements you saw.** Now — and only now — read computed styles to pin down precise values, targeting the *specific painted elements* vision or the painted-element probe flagged, not generic wrappers:
+1. **Use the exact URL the user gave.** Do not switch `.co` to `.com`, add `www`, or inspect the current tab unless the URL matches the user's text.
+2. **Let it render, then take a screenshot.** `browser_navigate` to the URL, wait for the page to settle, then take a `browser_vision` screenshot. Ask vision for the header/nav color, logo treatment, primary button/CTA color, search/tabs, heading/body colors, and overall mood.
+3. **Walk the page visually.** Scroll through the hero, search area, cards, payment blocks, services, blog, and footer. Lazy sections only reveal their real styling once they are in view.
+4. **Use computed styles as support, not sight.** After the screenshot pass, use `getComputedStyle` to pin down hex/rgb values on the specific elements you saw:
    ```js
    const pick = (sel, props) => { const el = document.querySelector(sel); if (!el) return null;
      const cs = getComputedStyle(el); return Object.fromEntries(props.map(p => [p, cs[p]])); };
@@ -125,12 +59,13 @@ When the user gives you a site to match, the goal is to capture its *real, rende
      link:   pick('a', ['color']),
    })
    ```
-   `getComputedStyle` returns the true rendered value no matter where the CSS lives — inline, bundled, or external/cross-origin — so it's reliable where reading `document.styleSheets[].cssRules` fails. **The trap:** a generic `header`/`nav` is often a transparent wrapper; the real color sits on an inner bar (e.g. WordPress's `.header-bg-color`). If a value comes back `transparent` or `rgba(0,0,0,0)` but your screenshot clearly shows a color there, you queried the wrong element or read too early — re-screenshot, then query the visible child. Never let a `transparent` reading override what you can plainly see. And don't try to shortcut this with a `querySelectorAll('*')` color-frequency sweep — it drowns the brand colors in black/white and misses anything below the fold.
-5. **Map what you saw** into `src/styles/global.css` variables (see the mapping table below), pick the closest Google Fonts to the real typefaces, and keep their dominant accent dominant.
+   The trap: a generic `header`/`nav` is often a transparent wrapper; the real color sits on an inner bar or child. If a value comes back transparent, query the visible child or ancestor.
+5. **If screenshots fail, do not pretend you saw it.** Say the screenshot failed, keep trying if the user asked for one, and use computed styles only as an implementation aid. Never tell the user "the colors are correct" from code, `curl`, `browser_snapshot`, or computed styles alone.
+6. **Map visual evidence into `src/styles/global.css`.** Pick the closest Google Fonts to the real typefaces and keep the dominant accent dominant.
 
 ## Verify Your Build Visually
 
-Before you tell the user it's done, look at your own work the same way: `browser_navigate` to `http://localhost:4321/app` and `browser_vision`. Confirm the palette and feel actually match the reference (or the chosen DESIGN.md). If `browser_vision` times out, use the same JS wait plus painted-element probe from "Studying a Reference Site"; do not mark visual verification complete from `curl` or `browser_snapshot` alone. If the colors are off, fix `global.css`, rebuild, and look again — close the loop on screen, not in your head.
+Before you tell the user it's done, look at your own work the same way: `browser_navigate` to `http://localhost:4321/app` and `browser_vision`. Confirm the palette and feel actually match the reference (or the chosen DESIGN.md). If `browser_vision` times out, say so and do not mark visual verification complete from `curl`, `browser_snapshot`, or computed styles alone. If the colors are off, fix `global.css`, rebuild, and look again — close the loop on screen, not in your head.
 
 ## Navigation Feedback (Perceived Speed)
 
